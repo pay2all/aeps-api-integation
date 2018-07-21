@@ -11,15 +11,32 @@ $number = $_POST['number'];
 $orderid = $_POST['orderid'];
 $checksum = $_POST['checksum'];
 
-//Credit $amount to your agents 
+//generate checksum for security purpose
 
-$data = [
-     'RESP_CODE' => 300,
-     'RESPONSE' => "SUCCESS",
-     'RESP_MSG' => 'Transaction Success'
-];
+$key = 'key provider by pay2all';
+$data = "$agentcode|$orderid|$amount|$servicetype";
+$decodedKey = pack("H*", $key);
+$hmac = hash_hmac("sha512", $data, $decodedKey, TRUE);
+$signature = base64_encode($hmac);
 
-echo json_encode($data);
+if($checksum == $signature){
 
+    //Credit $amount to your agents 
+
+    $data = [
+        'RESP_CODE' => 300,
+        'RESPONSE' => "SUCCESS",
+        'RESP_MSG' => 'Transaction Success'
+    ];
+
+    echo json_encode($data);
+
+}else{
+    $data = [
+        'RESP_CODE' => 302,
+        'RESPONSE' => "FAILURE",
+        'RESP_MSG' => 'checksum Not match'
+    ];
+}
 
 ?>
